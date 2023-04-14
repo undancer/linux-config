@@ -26,13 +26,19 @@ jobs:
       - uses: actions/checkout@v3
         with:
           path: main
-      
+
       - name: Checkout buildroot
         uses: actions/checkout@v3
         with:
           repository: buildroot/buildroot
           ref: 2023.02.x
           path: buildroot
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            buildroot/dl
+          key: ${{ runner.os }}-${{ hashFiles('**/.lock') }}
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
@@ -43,6 +49,7 @@ jobs:
         run: |
           touch main/config
           cp main/config buildroot/.config
+
       - name: run build
         run: |
           cd buildroot
