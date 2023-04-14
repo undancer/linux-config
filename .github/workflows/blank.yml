@@ -43,10 +43,8 @@ jobs:
 
       - name: Download Source
         if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          cd buildroot
-          make source
-          cd ..
+        working-directory: buildroot
+        run: make source
 
       # # Runs a single command using the runners shell
       # - name: Run a one-line script
@@ -58,8 +56,8 @@ jobs:
           cp main/config buildroot/.config
 
       - name: run build
+        working-directory: buildroot
         run: |
-          cd buildroot
           make
 
       - uses: actions/upload-artifact@v3
