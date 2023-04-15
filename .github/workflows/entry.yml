@@ -60,6 +60,6 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: my-artifact
+          name: ${{ matrix.defconfig }}
           path: |
             buildroot/output/images/
