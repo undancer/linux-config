@@ -37,34 +37,29 @@ jobs:
           ref: 2023.02.x
           path: buildroot
 
-      - id: cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            buildroot/dl
-          key: ${{ runner.os }}-${{ hashFiles('**/.lock') }}
+      - name: rsync
+        run: rsync -amv main/configs/ buildroot/configs/
 
-      - name: Download Source
-        if: steps.cache.outputs.cache-hit != 'true'
-        working-directory: buildroot
-        run: make source
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo ${{ matrix.defconfig }}_defconfig
-
-      # - name: run build
-      #   working-directory: buildroot
-      #   run: |
-      #     make
-
-      # - uses: actions/upload-artifact@v3
+      # - id: cache
+      #   uses: actions/cache@v3
       #   with:
-      #     name: my-artifact
       #     path: |
-      #       buildroot/output/images/
+      #       buildroot/dl
+      #     key: ${{ runner.os }}-${{ hashFiles('**/.lock') }}
+
+      # - name: Download Source
+      #   if: steps.cache.outputs.cache-hit != 'true'
+      #   working-directory: buildroot
+      #   run: make source
+
+      - name: run build
+        working-directory: buildroot
+        run: |
+          make ${{ matrix.defconfig }}_defconfig
+          make
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: |
+            buildroot/output/images/
