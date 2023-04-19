@@ -27,7 +27,8 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - name: Checkout Project
+        uses: actions/checkout@v3
         with:
           path: main
 
@@ -42,11 +43,11 @@ jobs:
       #   run: rsync -amv main/configs/ buildroot/configs/
 
       - id: cache
+        name: Cache
         uses: actions/cache@v3
         with:
           path: |
             buildroot/dl
-            .buildroot-ccache
           key: ${{ runner.os }}-${{ hashFiles('**/.lock') }}
 
       # - name: Download Source
@@ -54,7 +55,7 @@ jobs:
       #   working-directory: buildroot
       #   run: make source
 
-      - name: run build
+      - name: Run Scripts
         run: |
           make -C $(pwd)/buildroot BR2_EXTERNAL=$(pwd)/main O=$(pwd)/output ${{ matrix.defconfig }}_defconfig
           make -C $(pwd)/buildroot BR2_EXTERNAL=$(pwd)/main O=$(pwd)/output
