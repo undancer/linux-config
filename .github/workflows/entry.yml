@@ -21,7 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        defconfig: [initrdfs, rootfs, kernel]
+        # defconfig: [initrdfs, rootfs, kernel]
+        defconfig: [initrdfs, rootfs]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -37,8 +38,8 @@ jobs:
           ref: 2023.02.x
           path: buildroot
 
-      - name: rsync
-        run: rsync -amv main/configs/ buildroot/configs/
+      # - name: rsync
+      #   run: rsync -amv main/configs/ buildroot/configs/
 
       # - id: cache
       #   uses: actions/cache@v3
@@ -53,13 +54,12 @@ jobs:
       #   run: make source
 
       - name: run build
-        working-directory: buildroot
         run: |
-          make ${{ matrix.defconfig }}_defconfig
-          make
+          make -C buildroot BR2_EXTERNAL=main O=output ${{ matrix.defconfig }}_defconfig
+          make -C buildroot BR2_EXTERNAL=main O=output
 
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.defconfig }}
           path: |
-            buildroot/output/images/
+            output/images/
