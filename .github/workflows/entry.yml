@@ -59,7 +59,7 @@ jobs:
           make -C $(pwd)/buildroot BR2_EXTERNAL=$(pwd)/main O=$(pwd)/output ${{ matrix.defconfig }}_defconfig
           make -C $(pwd)/buildroot BR2_EXTERNAL=$(pwd)/main O=$(pwd)/output
 
-      - run: find $(pwd) -type d -name ".buildroot-ccache"
+      - run: find . -type d -name ".buildroot-ccache"
 
       - uses: actions/upload-artifact@v3
         with:
