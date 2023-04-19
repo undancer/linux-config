@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         # defconfig: [initrdfs, rootfs, kernel]
-        defconfig: [initrdfs, rootfs]
+        defconfig: [initrdfs, rootfs, initrdfs_latest, rootfs_latest,]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
