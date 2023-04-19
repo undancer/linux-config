@@ -62,4 +62,4 @@ jobs:
         with:
           name: ${{ matrix.defconfig }}
           path: |
-            $(pwd)/output/images/
+            output/images/
