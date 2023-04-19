@@ -41,12 +41,11 @@ jobs:
       # - name: rsync
       #   run: rsync -amv main/configs/ buildroot/configs/
 
-      # - id: cache
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: |
-      #       buildroot/dl
-      #     key: ${{ runner.os }}-${{ hashFiles('**/.lock') }}
+      - id: cache
+        uses: actions/cache@v3
+        with:
+          path: buildroot/dl
+          key: ${{ runner.os }}-${{ hashFiles('**/.lock') }}
 
       # - name: Download Source
       #   if: steps.cache.outputs.cache-hit != 'true'
