@@ -22,7 +22,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        defconfig: [initrdfs_5, initrdfs_6, rootfs_5, rootfs_6, kernel_5, kernel_6, kernel_latest, ]
+        # defconfig: [initrdfs_5, initrdfs_6, rootfs_5, rootfs_6, kernel_5, kernel_6, kernel_latest, ]
+        defconfig: [kernel_latest, ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
