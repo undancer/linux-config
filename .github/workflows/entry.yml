@@ -59,9 +59,9 @@ jobs:
         run: |
           DEBIAN_FRONTEND=noninteractive
           set -x \
-          && apt-get --assume-yes update \
-          && apt-get --assume-yes upgrade \
-          && apt-get --assume-yes install \
+          && sudo apt-get --assume-yes update \
+          && sudo apt-get --assume-yes upgrade \
+          && sudo apt-get --assume-yes install \
           cpio \
           rsync \
           bc \
