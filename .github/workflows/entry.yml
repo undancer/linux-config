@@ -22,9 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # defconfig: [initrdfs, rootfs, kernel]
-        # defconfig: [initrdfs_5, initrdfs_6, rootfs_5, rootfs_6, kernel_5, kernel_6, ]
-        defconfig: [initrdfs_5, initrdfs_6, rootfs_5, rootfs_6, kernel_6, kernel_latest, ]
+        defconfig: [initrdfs_5, initrdfs_6, rootfs_5, rootfs_6, kernel_5, kernel_6, kernel_latest, ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -56,6 +54,18 @@ jobs:
       #   if: steps.cache.outputs.cache-hit != 'true'
       #   working-directory: buildroot
       #   run: make source
+
+      - name: Prepare
+        run: |
+          DEBIAN_FRONTEND=noninteractive
+          set -x \
+          && apt-get --assume-yes update \
+          && apt-get --assume-yes upgrade \
+          && apt-get --assume-yes install \
+          cpio \
+          rsync \
+          bc \
+          libelf-dev
 
       - name: Run Scripts
         run: |
