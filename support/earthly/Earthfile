@@ -1,0 +1,11 @@
+VERSION 0.7
+
+FROM library/alpine:3.17.3
+
+all:
+  BUILD +run
+
+run:
+  FROM ghcr.io/undancer/buildroot:latest
+
+  RUN ls -al /buildroot

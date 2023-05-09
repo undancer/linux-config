@@ -1,0 +1,21 @@
+name: job1
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+        default: 'default_tag'
+
+env:
+  tag: ${{ inputs.tag }}
+
+jobs:
+  runner:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo step1
+          echo ${{ env.tag }}
+          echo ${{ inputs.tag }}

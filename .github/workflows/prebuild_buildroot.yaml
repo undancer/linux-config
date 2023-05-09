@@ -1,0 +1,58 @@
+name: prebuild
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        required: true
+        type: string
+        default: "docker.io/library/hello-world"
+      tag:
+        required: true
+        type: string
+        default: "latest"
+
+env:
+  base: ${{ inputs.image }}
+  image: "ghcr.io/${{ github.actor }}/buildroot"
+  tag: ${{ inputs.tag }}
+
+jobs:
+  runner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ghcr.io/${{ github.actor }}/buildroot
+          flavor: |
+            latest=auto
+            prefix=
+            suffix=
+          tags: |
+            type=raw,value=${{ env.tag }},enable={{is_default_branch}}
+            # set latest tag for default branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: support/docker
+          build-args: |
+            image=${{ env.base }}
+            tag=${{ env.tag }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

@@ -1,0 +1,61 @@
+name: tigger
+
+on:
+  push:
+    branches:
+      - "main"
+      - "develop"
+    # tags:
+    #   - "v*"
+  pull_request:
+    branches:
+      - "main"
+      - "develop"
+
+  workflow_dispatch:
+
+# permissions:
+#   contents: read
+#   # pull-requests: write
+#   packages: write
+
+jobs:
+  tigger:
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.runner.outputs.ref }}
+      tag: ${{ steps.runner.outputs.tag }}
+      image: ${{ steps.runner.outputs.image }}
+    steps:
+      - name: Checkout buildroot
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: buildroot/buildroot
+
+      - name: get buildroot info
+        id: runner
+        run: |
+          git tag | grep -v rc | grep -e `date +%Y` | sed -e 's,^,tag=,g' >> "$GITHUB_OUTPUT"
+          # git branch -r | grep `date +%Y` | sed -e 's/\s*\S*\///g' | sed -e 's,^,ref=,g' >> "$GITHUB_OUTPUT"
+          cat .gitlab-ci.yml | grep ^image | sed -e 's,^image: ,,g' | sed -e 's,\$CI_REGISTRY,registry.gitlab.com,g' | sed -e 's,^,image=,g' >> "$GITHUB_OUTPUT"
+
+  echo:
+    runs-on: ubuntu-latest
+    needs: tigger
+    steps:
+      - env:
+          # ref: ${{ needs.tigger.outputs.ref }}
+          tag: ${{ needs.tigger.outputs.tag }}
+          image: ${{ needs.tigger.outputs.image }}
+        run: echo "$ref $tag $image"
+      - uses: actions/checkout@v3
+      - run: find . -type f -name "*.yml"
+      # - uses: ./prebuild_buildroot_platform.yml
+      #   with:
+      #     tag: ${{ needs.tigger.outputs.tag }}
+      #     image: ${{ needs.tigger.outputs.image }}
+      - uses: ./.github/workflows/prebuild_buildroot_platform
+        with:
+          tag: ${{ needs.tigger.outputs.tag }}
+          image: ${{ needs.tigger.outputs.image }}

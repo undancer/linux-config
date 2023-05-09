@@ -1,0 +1,9 @@
+name: prebuild buildroot
+description: ""
+# run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+
+runs:
+  using: composite
+  steps:
+    - run: echo prebuild
+      shell: bash

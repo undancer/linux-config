@@ -1,0 +1,32 @@
+name: fetch buildroot payload
+
+on:
+  workflow_call:
+    outputs:
+      image:
+        value: ${{ jobs.fetch.outputs.image }}
+      tag:
+        value: ${{ jobs.fetch.outputs.tag }}
+
+env:
+  repository: buildroot/buildroot
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.runner.outputs.tag }}
+      image: ${{ steps.runner.outputs.image }}
+    steps:
+      - name: Checkout buildroot
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: ${{ env.repository }}
+
+      - name: get buildroot info
+        id: runner
+        run: |
+          git tag | grep -v rc | grep -e `date +%Y` | sed -e 's,^,tag=,g' >> "$GITHUB_OUTPUT"
+          # git branch -r | grep `date +%Y` | sed -e 's/\s*\S*\///g' | sed -e 's,^,ref=,g' >> "$GITHUB_OUTPUT"
+          cat .gitlab-ci.yml | grep ^image | sed -e 's,^image: ,,g' | sed -e 's,\$CI_REGISTRY,registry.gitlab.com,g' | sed -e 's,^,image=,g' >> "$GITHUB_OUTPUT"
