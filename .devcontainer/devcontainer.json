@@ -1,0 +1,31 @@
+{
+	"name": "linux-devcontainer",
+	"image": "mcr.microsoft.com/devcontainers/universal:latest",
+	"features": {
+		// "ghcr.io/devcontainers/features/docker-in-docker:2": {
+		//   "version": "latest"
+		// },
+		// "ghcr.io/devcontainers/features/go:1": {},
+		// "ghcr.io/azutake/devcontainer-features/go-packages-install:0": {}
+	},
+	// "hostRequirements": {
+	// "cpus": 8,
+	// "memory": "8gb",
+	// "storage": "32gb"
+	// "storage": "40gb"
+	// },
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"MS-CEINTL.vscode-language-pack-zh-hans",
+				"GitHub.codespaces",
+				"github.vscode-github-actions",
+				"eamodio.gitlens",
+				"GreatMinds.gitflow4code",
+				"golang.Go",
+				"redhat.vscode-yaml",
+				"earthly.earthfile-syntax-highlighting"
+			]
+		}
+	}
+}

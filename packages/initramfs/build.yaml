@@ -1,0 +1,47 @@
+requires:
+  - name: "kernel"
+    category: "system"
+    version: ">=0"
+
+# excludes:
+#   - ^/boot/grub2
+#   - ^/boot/initrd
+includes:
+  # - ^/boot|^/boot/.*
+  - ^/boot/initrd.*
+prelude:
+  - rm -rf /boot/initrd* || true
+steps:
+  - |
+    kernel=$(ls /lib/modules | head -n1) && \
+    dracut -f "/boot/initrd-${kernel}" "${kernel}" && \
+    ln -sf "initrd-${kernel}" /boot/initrd
+
+# excludes:
+#   - ^/boot/grub2
+#   - ^/boot/initrd
+# includes:
+#   - ^/boot|^/boot/.*
+#   - ^/lib/modules|^/lib/modules.*
+#   - ^/usr/lib/modules|^/usr/lib/modules.*
+
+# {{ if eq .Values.distribution "ubuntu" }}
+# env:
+#   - DEBIAN_FRONTEND=noninteractive
+# steps:
+#   - |
+#     set -x \
+#     && apt-get --assume-yes update \
+#     && apt-get --assume-yes upgrade \
+#     && apt-get --assume-yes install --no-install-recommends \
+#     {{ .Values.kernel_package }}={{ .Values.version }} \
+#     && apt-get clean \
+#     && rm -rf /var/lib/apt/lists/*
+#   - |
+#     kernel=$(ls /boot/vmlinuz-* | head -n1) && \
+#     ln -sf "${kernel#/boot/}" /boot/vmlinuz
+# {{ end }}
+#   - |
+#     kernel=$(ls /lib/modules | head -n1) && depmod -a "${kernel}"
+
+unpack: true

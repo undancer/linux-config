@@ -1,0 +1,17 @@
+image: "{{ .Values.image }}"
+
+{{ if eq .Values.distribution "ubuntu" }}
+env:
+  - DEBIAN_FRONTEND=noninteractive
+steps:
+  - |
+    set -x \
+    && apt-get --assume-yes update \
+    && apt-get --assume-yes upgrade \
+    && apt-get --assume-yes install --no-install-recommends \
+    {{ .Values.packages }} \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+{{ end }}
+
+unpack: true

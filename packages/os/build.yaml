@@ -1,0 +1,10 @@
+requires:
+  - name: "initramfs"
+    category: "system"
+    version: ">=0"
+  - name: "kernel"
+    category: "system"
+    version: ">=0"
+
+requires_final_images: true
+unpack: true
