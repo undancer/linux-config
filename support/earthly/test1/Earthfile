@@ -1,0 +1,66 @@
+VERSION 0.7
+
+# FROM library/alpine:3.17.3
+
+scratch:
+  FROM scratch
+
+all:
+  FROM ghcr.io/undancer/buildroot:latest
+
+  USER root
+
+#   RUN sed -i -E 's/(archive|security).ubuntu.com/mirrors.163.com/g' /etc/apt/sources.list
+# ENV DEBIAN_FRONTEND=noninteractive
+# RUN set -x \
+#     && apt-get --assume-yes update \
+#     && apt-get --assume-yes upgrade \
+#     && apt-get --assume-yes install \
+#     cpio \
+#     rsync \
+#     bc \
+#     libelf-dev \
+#     && echo done
+
+  RUN set -x \
+      && apt-get --assume-yes update \
+      && apt-get --assume-yes upgrade \
+      && apt-get --assume-yes install \
+      wget \
+      tree \
+      curl \
+      && apt-get clean \
+      && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /var/cache/debconf/* /var/log/*
+
+  USER br-user
+
+  VOLUME /buildroot/dl 
+
+#   USER $(id -u):$(id -g)
+
+#   RUN mkdir -p /buildroot/dl
+
+#   CACHE --sharing shared /buildroot/dl
+#   CACHE /buildroot/dl
+#   RUN chown -R $(id -u):$(id -g) /buildroot/dl
+#   RUN chown -R 1000:1000 /buildroot/dl
+#   RUN --mount type=cache,target=/buildroot/dl,sharing=shared chown -R $(id -u):$(id -g) /buildroot/dl
+
+#   RUN cd /buildroot \
+#       && make pc_x86_64_bios_defconfig \
+#       && make source
+    #   && make help \
+    #   && find ./conf* -type f
+  RUN make -C /buildroot O=$(pwd)/output pc_x86_64_bios_defconfig
+#   RUN ls -aln /buildroot
+#   RUN echo $(id -u):$(id -g)
+#   RUN --mount type=cache,target=/buildroot/dl,sharing=shared make -C /buildroot O=$(pwd)/output source
+#   RUN make -C /buildroot O=$(pwd)/output BR2_DL_DIR=$(pwd)/dl gcc-source
+#   RUN make -C /buildroot O=$(pwd)/output BR2_DL_DIR=$(pwd)/dl gcc-final-source
+  RUN make -C /buildroot O=$(pwd)/output kmod-source
+#   RUN make -C /buildroot O=$(pwd)/output BR2_DL_DIR=$(pwd)/dl kmod-source
+
+  # RUN find ./dl
+  RUN find /buildroot/dl
+
+  SAVE IMAGE undancer/buildroot:dl
