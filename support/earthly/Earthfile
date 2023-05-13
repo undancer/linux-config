@@ -3,11 +3,75 @@ VERSION 0.7
 FROM library/alpine:3.17.3
 
 all:
-  BUILD +run
+  # BUILD +run
+  BUILD +source
+  BUILD +toolchain
+  # BUILD +sdk
+  BUILD +image
 
-run:
+buildroot:
   FROM ghcr.io/undancer/buildroot:latest
+
+  COPY --if-exists ./dist/dl /buildroot/dl
+  COPY --if-exists ./dist/.buildroot-ccache ./.buildroot-ccache
 
   COPY . .
 
-  # RUN ls -al /buildroot
+source:
+  FROM +buildroot
+
+  RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd) kernel_latest_defconfig
+  # RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd) initrdfs_latest_defconfig
+  RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd) source
+
+  SAVE ARTIFACT /buildroot/dl/* AS LOCAL ./dist/dl/
+  SAVE ARTIFACT ./output/*.* AS LOCAL ./output/
+
+toolchain:
+  FROM +source
+
+  RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd) toolchain
+
+  # RUN ls -aln ./output/
+  # RUN tree -L 2 -d ./output
+  # RUN find ./output -type d -maxdepth 2
+  # RUN ls -aln ./output/images
+
+  SAVE ARTIFACT ./.buildroot-ccache/* AS LOCAL ./dist/.buildroot-ccache/
+  
+  SAVE ARTIFACT ./output/*.* AS LOCAL ./output/
+
+sdk:
+  FROM +toolchain
+
+  RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd) sdk
+
+  # RUN find ./output/image* -type d -maxdepth 2
+  # RUN ls -aln ./output/images
+
+
+  # SAVE ARTIFACT ./.buildroot-ccache/* AS LOCAL ./dist/.buildroot-ccache/
+  
+  SAVE ARTIFACT ./output/images/ AS LOCAL ./output/images
+
+image:
+  FROM +toolchain
+
+  RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd)
+
+  RUN find ./output -type d -maxdepth 2
+
+  SAVE ARTIFACT ./output/images/ AS LOCAL ./output/images
+
+run:
+  FROM +buildroot
+
+  # RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd) allyesconfig
+  # RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd) allyespackageconfig
+  # RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd) savedefconfig
+  
+  # RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd) initrdfs_latest_defconfig
+  # RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd) source
+
+  # SAVE ARTIFACT ./output/* AS LOCAL ./output/
+
