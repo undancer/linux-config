@@ -1,6 +1,60 @@
 VERSION 0.7
 
-FROM library/alpine:3.17.3
+FROM library/alpine:3.18
+
+COPY_SELF:
+  COMMAND
+  # COPY --if-exists ./output/*.* ./output
+  # COPY --dir --if-exists ./output/dl ./dl
+  # COPY --dir --if-exists ./output/ccache ./ccache
+
+  COPY --if-exists ./output/dl /buildroot/dl
+  COPY --if-exists ./output/ccache ./.buildroot-ccache
+
+  COPY . .
+
+
+SAVE_SELF:
+  COMMAND
+  ARG output
+
+  SAVE ARTIFACT --if-exists ./output/*.* AS LOCAL ./output/
+  SAVE ARTIFACT --if-exists ./output/images/ AS LOCAL ./output/images
+  SAVE ARTIFACT --if-exists /buildroot/dl/* AS LOCAL ./output/dl/
+  SAVE ARTIFACT --if-exists ./.buildroot-ccache/* AS LOCAL ./output/ccache/
+
+  # SAVE ARTIFACT --if-exists ./output/*.* AS LOCAL ./output/
+  # # FOR dir IN $(ls -d ./output/*)
+  # #   IF [ -d $dir ]
+  # #     RUN base=$(basename $dir)
+  # #     RUN echo ">>>> $base"
+  # #     IF [ "$base" = "images" ]
+  # #       RUN echo "SAVE ARTIFACT --if-exists ./output/$base/* AS LOCAL ./output/$base/"
+  # #       SAVE ARTIFACT --if-exists ./output/$base/* AS LOCAL ./output/$base/
+  # #     # ELSE
+  # #     END
+  # #   END
+  # # END
+  # # IF [ -d ./output ]
+  # #   RUN ls -d ./output/*
+  # # END
+
+  # # IF [ -d ./output/images ]
+  # #   RUN ls -d ./output/images/*
+  # # END
+
+  # SAVE ARTIFACT --if-exists ./output/images/* AS LOCAL ./output/images/
+  # SAVE ARTIFACT --if-exists ./dl/* AS LOCAL ./output/dl/
+  # SAVE ARTIFACT --if-exists ./ccache/* AS LOCAL ./output/ccache/
+  # SAVE ARTIFACT --if-exists ./.config AS LOCAL ./output/buildroot.config
+  # # SAVE ARTIFACT --if-exists ./defconfig AS LOCAL ./output/buildroot.defconfig
+  # # SAVE ARTIFACT --if-exists ./output/buildroot.defconfig AS LOCAL ./output/buildroot.defconfig
+
+  # build
+  # host
+  # images
+  # staging
+  # target  
 
 all:
   # BUILD +run
@@ -12,8 +66,10 @@ all:
 buildroot:
   FROM ghcr.io/undancer/buildroot:latest
 
-  COPY --if-exists ./dist/dl /buildroot/dl
-  COPY --if-exists ./dist/.buildroot-ccache ./.buildroot-ccache
+  # DO +COPY_SELF
+
+  COPY --if-exists ./output/dl /buildroot/dl
+  COPY --if-exists ./output/ccache ./.buildroot-ccache
 
   COPY . .
 
@@ -24,8 +80,10 @@ source:
   # RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd) initrdfs_latest_defconfig
   RUN make -C /buildroot O=$(pwd)/output BR2_EXTERNAL=$(pwd) source
 
-  SAVE ARTIFACT /buildroot/dl/* AS LOCAL ./dist/dl/
-  SAVE ARTIFACT ./output/*.* AS LOCAL ./output/
+  # DO +SAVE_SELF
+
+  SAVE ARTIFACT --if-exists /buildroot/dl/* AS LOCAL ./output/dl/
+  SAVE ARTIFACT --if-exists ./output/*.* AS LOCAL ./output/
 
 toolchain:
   FROM +source
@@ -36,10 +94,11 @@ toolchain:
   # RUN tree -L 2 -d ./output
   # RUN find ./output -type d -maxdepth 2
   # RUN ls -aln ./output/images
-
-  SAVE ARTIFACT ./.buildroot-ccache/* AS LOCAL ./dist/.buildroot-ccache/
   
-  SAVE ARTIFACT ./output/*.* AS LOCAL ./output/
+  # DO +SAVE_SELF
+
+  SAVE ARTIFACT --if-exists ./output/*.* AS LOCAL ./output/
+  SAVE ARTIFACT --if-exists ./.buildroot-ccache/* AS LOCAL ./output/ccache/
 
 sdk:
   FROM +toolchain
@@ -48,11 +107,9 @@ sdk:
 
   # RUN find ./output/image* -type d -maxdepth 2
   # RUN ls -aln ./output/images
-
-
-  # SAVE ARTIFACT ./.buildroot-ccache/* AS LOCAL ./dist/.buildroot-ccache/
+  # DO +SAVE_SELF
   
-  SAVE ARTIFACT ./output/images/ AS LOCAL ./output/images
+  SAVE ARTIFACT --if-exists ./output/images/ AS LOCAL ./output/images
 
 image:
   FROM +toolchain
@@ -61,7 +118,11 @@ image:
 
   RUN find ./output -type d -maxdepth 2
 
-  SAVE ARTIFACT ./output/images/ AS LOCAL ./output/images
+  # DO +SAVE_SELF
+
+  SAVE ARTIFACT --if-exists ./output/images/ AS LOCAL ./output/images
+  SAVE ARTIFACT --if-exists /buildroot/dl/* AS LOCAL ./output/dl/
+  SAVE ARTIFACT --if-exists ./.buildroot-ccache/* AS LOCAL ./output/ccache/
 
 run:
   FROM +buildroot
